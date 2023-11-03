@@ -5,6 +5,8 @@ var yourSum =0;
 var dealerAceCount=0;
 var yourAceCount =0;
 
+var yourCash = 500;
+
 var hidden;
 var deck;
 
@@ -42,6 +44,7 @@ function startGame() {
   hidden = deck.pop();
   dealerSum += getValue(hidden);
   dealerAceCount += checkAce(hidden);
+  //document.getElementById("your-cash").innerText = "$" + yourCash;
   /* console.log(hidden);
   console.log(dealerSum); */
   //deal cards to dealer
@@ -61,6 +64,8 @@ function startGame() {
     yourAceCount += checkAce(card);
     document.getElementById("your-cards").append(cardImg);
   }
+  displayYourSum();
+
   //console.log(yourSum);
   document.getElementById("hit").addEventListener("click", hit);
   document.getElementById("stay").addEventListener("click", stay);
@@ -76,9 +81,12 @@ function hit() {
   cardImg.src = "./cards/" + card + ".png";
   yourSum += getValue(card);
   yourAceCount += checkAce(card);
-  document.getElementById("your-cards").append(cardImg);
+  yourSum = reduceAce(yourSum, yourAceCount);
 
-  if (reduceAce(yourSum, yourAceCount) > 21) {
+  document.getElementById("your-cards").append(cardImg);
+  displayYourSum();
+
+  if (yourSum > 21) {
     canHit = false;
     calculate();
   }
@@ -88,16 +96,12 @@ function hit() {
 function stay() {
   canHit = false;
   calculate();
-  
 }
 
 function calculate() {
-  
-  yourSum = reduceAce(yourSum, yourAceCount);
-  dealerSum = reduceAce(dealerSum, dealerAceCount);
 
   document.getElementById("hidden").src = "./cards/" + hidden + ".png";
-  dealerTurn()
+  dealerTurn();
   
   let message = "";
   if (yourSum > 21) {
@@ -174,25 +178,54 @@ function reset() {
   dealerAceCount=0;
 
 
-  document.getElementById("dealer-cards").removeChild(document.getElementById("dealer-cards").firstElementChild);
-  document.getElementById("your-cards").removeChild();
 
+  while (document.getElementById("dealer-cards").firstElementChild) {
+    document.getElementById("dealer-cards").removeChild(document.getElementById("dealer-cards").firstElementChild);
+  }
+  while (document.getElementById("your-cards").firstElementChild) {
+    document.getElementById("your-cards").removeChild(document.getElementById("your-cards").firstElementChild);
+  }
+
+  dealDealer();
+  dealYou();
+  document.getElementById("dealer-sum").innerText = "";
+  displayYourSum();
+  document.getElementById("results").innerText = "";
+
+  canHit = true;
+
+
+}
+
+function displayYourSum(){
+  document.getElementById("your-sum").innerText = yourSum;
+}
+
+function dealYou() {
+  for(let i=0; i<2; i++) {
+    let cardImg = document.createElement("img");
+    let card = deck.pop();
+    cardImg.src = "./cards/" + card + ".png";
+    yourSum += getValue(card);
+    yourAceCount += checkAce(card);
+    document.getElementById("your-cards").append(cardImg);
+  }
+}
+
+function dealDealer() {
   let cardImg = document.createElement("img");
   cardImg.src = "./cards/BACK.png";
-  document.getElementById("dealer-cards").append(cardImg);
+  cardImg.id = "hidden";
+  document.getElementById("dealer-cards").appendChild(cardImg);
 
   hidden = deck.pop();
   dealerSum += getValue(hidden);
-  dealerAceCount += checkAce(hidden);
+  dealerAceCount += checkAce(hidden); 
 
-
-  
-
-  /* let cardImg = document.createElement("img");
   let card = deck.pop();
-  cardImg.src = "./cards/" + card + ".png";
+  let cardImg2 = document.createElement("img");
+  cardImg2.src = "./cards/" + card + ".png";
   dealerSum += getValue(card);
   dealerAceCount += checkAce(card);
-  document.getElementById("dealer-cards").append(cardImg); */
+  document.getElementById("dealer-cards").appendChild(cardImg2);
 }
-

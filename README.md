@@ -38,9 +38,10 @@ Blackjack, also known as 21, is a simple yet captivating game. Our version bring
 
 
 
-## Contributing
+## Issues
 
-We appreciate contributions from the community. If you find a bug, want to suggest an improvement, or have a cool idea for a feature, please [open an issue on our GitHub repository](https://github.com/SungRKang/Blackjack).
+#### Issue 1
+- Ace isn't being counted correctly for the dealer. 
 
 
 ## Contact
