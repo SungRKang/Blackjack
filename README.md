@@ -1,6 +1,3 @@
-Certainly! Here's a template for a README for your blackjack game:
-
----
 
 # Blackjack Game
 
