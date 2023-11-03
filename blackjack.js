@@ -8,10 +8,21 @@ var yourCash = 500;
 
 var hidden;
 var deck;
+var theBet = 0;
+var currentBet = 0;
 
-var canHit = true; //allows the player to draw while yourSum <= 21
+var cardCount1 = 0;
+
+var canHit = false; //allows the player to draw while yourSum <= 21
+var canStay = false;
+var canAdd = true;
+var canRemove = false;
+var canPlay = false;
 
 window.onload = function() {
+  buildDeck();
+  buildDeck();
+  buildDeck();
   buildDeck();
   shuffleDeck();
   startGame();
@@ -40,19 +51,29 @@ function shuffleDeck() {
 }
 
 function startGame() {
-  hidden = deck.pop();
-  dealerSum += getValue(hidden);
-  dealerAceCount += checkAce(hidden);
   //document.getElementById("your-cash").innerText = "$" + yourCash;
   /* console.log(hidden);
   console.log(dealerSum); */
   //deal cards to dealer
 
   //console.log(dealerSum);
-  dealDealer();
-  dealYou();
-  displayYourSum();
+  
+  document.getElementById("player-total").innerText = "In Hand: $" + yourCash;
+  var slider = document.getElementById("myRange");
+  var output = document.getElementById("betting-amount");
+  
+  output.innerHTML =  "$" + slider.value; // Display the default slider value
+  theBet = parseInt(slider.value);
 
+  // Update the current slider value (each time you drag the slider handle)
+  slider.oninput = function() {
+    output.innerHTML = "$" + slider.value;
+    theBet = parseInt(slider.value);
+  }
+  console.log(dealerSum);
+  document.getElementById("add").addEventListener("click", add);
+  document.getElementById("remove").addEventListener("click", remove);
+  document.getElementById("play").addEventListener("click", play);
   //console.log(yourSum);
   document.getElementById("hit").addEventListener("click", hit);
   document.getElementById("stay").addEventListener("click", stay);
@@ -66,12 +87,13 @@ function hit() {
   let card = deck.pop();
   cardImg.src = "./resources/cards/" + card + ".png";
   cardImg.classList.add('cards');
+  cardCount1 += 1;
+  cardImg.id = "card" + cardCount1;
   yourSum += getValue(card);
   yourAceCount += checkAce(card);
   yourSum = reduceAce(yourSum, yourAceCount);
 
   document.getElementById("your-cards").append(cardImg);
-  displayYourSum();
 
   if (yourSum > 21) {
     canHit = false;
@@ -81,12 +103,14 @@ function hit() {
 }
 
 function stay() {
+  if (!canStay) {
+    return;
+  }
   canHit = false;
   calculate();
 }
 
 function calculate() {
-
   document.getElementById("hidden").src = "./resources/cards/" + hidden + ".png";
   dealerTurn();
   
@@ -95,21 +119,23 @@ function calculate() {
     message = "You lose!";
   }
   else if (dealerSum > 21) {
-    message = "You win!";
+    yourCash += theBet*2;
   }
   //both you and dealer <= 21
   else if( yourSum == dealerSum) {
-    message = "Tie!";
+    yourCash += theBet;
   }
   else if (yourSum > dealerSum) {
-    message = "You win!";
+    yourCash += theBet*2;
+  }
+  else if (yourSum == 21) {
+    yourCash += (3/2)*theBet + theBet;
   }
   else if (yourSum < dealerSum) {
     message = "You lose!";
   }
-  document.getElementById("dealer-sum").innerText = dealerSum;
-  document.getElementById("your-sum").innerText = yourSum;
-  document.getElementById("results").innerText = message;
+
+  reset();
 }
 
 
@@ -145,6 +171,7 @@ function reduceAce(playerSum, playerAceCount) {
 }
 
 function dealerTurn() {
+  console.log(dealerSum);
   while (dealerSum < 17) {
     let cardImg = document.createElement("img");
     let card = deck.pop();
@@ -153,9 +180,8 @@ function dealerTurn() {
     dealerSum += getValue(card);
     dealerAceCount += checkAce(card);
     dealerSum = reduceAce(dealerSum, dealerAceCount);
-    setTimeout(function() {
-      document.getElementById("dealer-cards").append(cardImg);
-    }, 500)
+    document.getElementById("dealer-cards").append(cardImg);
+    
   }
 }
 
@@ -165,27 +191,32 @@ function reset() {
   dealerSum=0;
   dealerAceCount=0;
 
-  while (document.getElementById("dealer-cards").firstElementChild) {
-    document.getElementById("dealer-cards").removeChild(document.getElementById("dealer-cards").firstElementChild);
-  }
-  while (document.getElementById("your-cards").firstElementChild) {
-    document.getElementById("your-cards").removeChild(document.getElementById("your-cards").firstElementChild);
-  }
+  theBet = 0;
+  currentBet = 0;
 
-  dealDealer();
-  dealYou();
-  document.getElementById("dealer-sum").innerText = "";
-  displayYourSum();
-  document.getElementById("results").innerText = "";
+  cardCount1 = 0;
 
-  canHit = true;
+  canHit = false; //allows the player to draw while yourSum <= 21
+  canStay = false;
+  canAdd = true;
+  canRemove = false;
+  canPlay = false;
 
+  document.getElementById("player-total").innerText = "In Hand: $" + yourCash;
+  document.getElementById("current-bet").innerHTML = "Bet: $" + currentBet;
+
+  setTimeout(function() {
+    while (document.getElementById("dealer-cards").firstElementChild) {
+      document.getElementById("dealer-cards").removeChild(document.getElementById("dealer-cards").firstElementChild);
+    }
+    while (document.getElementById("your-cards").firstElementChild) {
+      document.getElementById("your-cards").removeChild(document.getElementById("your-cards").firstElementChild);
+    }
+  }, 5000);
+  
 
 }
 
-function displayYourSum(){
-  document.getElementById("your-sum").innerText = yourSum;
-}
 
 function dealYou() {
   for(let i=0; i<2; i++) {
@@ -193,16 +224,18 @@ function dealYou() {
     let card = deck.pop();
     cardImg.src = "./resources/cards/" + card + ".png";
     cardImg.classList.add('cards');
+    cardCount1 += 1;
+    cardImg.id = "card" + cardCount1;
     yourSum += getValue(card);
     yourAceCount += checkAce(card);
     document.getElementById("your-cards").append(cardImg);
   }
+  
 }
 
 
-
-
 function dealDealer() {
+  console.log(dealerSum);
   let cardImg = document.createElement("img");
   cardImg.src = "./resources/cards/BACK.png";
   cardImg.classList.add('cards');
@@ -220,4 +253,37 @@ function dealDealer() {
   dealerSum += getValue(card);
   dealerAceCount += checkAce(card);
   document.getElementById("dealer-cards").appendChild(cardImg2);
+  console.log(dealerSum);
+}
+
+function add() {
+  if (yourCash - theBet < 0) {
+    return;
+  }
+  currentBet += theBet;
+  yourCash -= theBet;
+  document.getElementById("current-bet").innerHTML = "Bet: $" + currentBet;
+  document.getElementById("player-total").innerHTML = "In Hand: $" + yourCash;
+}
+
+function remove() {
+  if (currentBet - theBet < 0) {
+    return;
+  }
+  currentBet -= theBet;
+  yourCash += theBet;
+  document.getElementById("current-bet").innerHTML = "Bet: $" + currentBet;
+  document.getElementById("player-total").innerHTML = "In Hand: $" + yourCash;
+}
+
+function play() {
+  if (currentBet <= 0) {
+    return;
+  }
+
+  dealDealer();
+  
+  dealYou();
+  canHit = true;
+  canStay = true;
 }
